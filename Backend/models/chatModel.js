@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 
 const chatSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
-  messages: [
+   userId: { type: String, required: true},
+  reportId :{ type: String, required: true},
+   messages: [
     {
       role: { type: String, enum: ['user', 'ai'] },
       content: String,
@@ -11,5 +12,5 @@ const chatSchema = new mongoose.Schema({
   ]
 });
 
-module.exports = mongoose.model('Chat', chatSchema);
-
+const chatModel = mongoose.model('Chat', chatSchema);
+module.exports = {chatModel};
