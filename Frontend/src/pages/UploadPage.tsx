@@ -12,7 +12,7 @@ const UploadPage = () => {
 
   useEffect(() => {
     // Redirect to results page if report is already processed
-    if (currentReport && currentReport.processed) {
+    if (currentReport) {
       navigate('/results');
     }
   }, [currentReport, navigate]);
@@ -20,7 +20,10 @@ const UploadPage = () => {
   const handleFileSelect = async (file: File) => {
     try {
       setIsProcessing(true);
-      await uploadReport(file);
+      const success = await uploadReport(file);
+      if (success) {
+        navigate('/results');
+      }
     } catch (error) {
       console.error('Error uploading file:', error);
       setIsProcessing(false);
