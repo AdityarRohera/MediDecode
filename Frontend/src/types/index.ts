@@ -12,7 +12,7 @@ export interface OrganResult {
   status: StatusType;
   explanation: string;
   extractionFromReport: ExtractionFromReport;
-  _id: string;
+  reportId: string;
 }
 
 export interface MedicalReport {
@@ -28,7 +28,7 @@ export interface MedicalReport {
 export interface AnalysisResponse {
   analyzed: boolean;
   reportId: string;
-  report: MedicalReport;
+  report?: MedicalReport;
 }
 
 export interface OrganSystem {

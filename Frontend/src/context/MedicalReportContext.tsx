@@ -2,7 +2,7 @@ import { createContext, useContext, useState, ReactNode, useEffect } from 'react
 import { MedicalReport, AnalysisResponse } from '../types';
 
 interface MedicalReportContextType {
-  currentReport: MedicalReport | null;
+  currentReport: AnalysisResponse | null;
   reportHistory: MedicalReport[];
   isLoading: boolean;
   setCurrentReport: (report: MedicalReport | null) => void;
@@ -14,7 +14,7 @@ interface MedicalReportContextType {
 const MedicalReportContext = createContext<MedicalReportContextType | undefined>(undefined);
 
 export function MedicalReportProvider({ children }: { children: ReactNode }) {
-  const [currentReport, setCurrentReport] = useState<MedicalReport | null>(null);
+  const [currentReport, setCurrentReport] = useState<AnalysisResponse | null>(null);
   const [reportHistory, setReportHistory] = useState<MedicalReport[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -58,13 +58,8 @@ export function MedicalReportProvider({ children }: { children: ReactNode }) {
         throw new Error('Report analysis failed: Server indicated analysis was not successful');
       }
 
-      if (!data.report) {
-        console.error('No report in response:', data);
-        throw new Error('Report analysis failed: No report data received');
-      }
-
-      setCurrentReport(data.report);
-      setReportHistory(prev => [data.report, ...prev]);
+      setCurrentReport(data);
+      // setReportHistory(prev => [data.report, ...prev]);
       return true;
     } catch (error) {
       console.error('Error uploading report:', error);
@@ -83,7 +78,8 @@ export function MedicalReportProvider({ children }: { children: ReactNode }) {
         throw new Error('Failed to fetch report');
       }
 
-      const data: MedicalReport = await response.json();
+      const data: AnalysisResponse = await response.json();
+      console.log("Data from API:", data);
       setCurrentReport(data);
       return true;
     } catch (error) {
