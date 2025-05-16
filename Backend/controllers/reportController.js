@@ -87,7 +87,7 @@ Respond ONLY in the following JSON format (no markdown formatting, just pure JSO
 
         const reportId = uuidv4();
         const report = new reportModel({
-            userId: new mongoose.Types.ObjectId(), // Generate a new ObjectId
+            userId: "f2c7433f-1afc-497c-8356-1fb09e4ed359", // Generate a new ObjectId
             reportId: reportId,
             fileName: req.file.originalname,
             fileUrl: filePath,
@@ -99,10 +99,11 @@ Respond ONLY in the following JSON format (no markdown formatting, just pure JSO
                 extractionFromReport: item.extractionFromReport
             }))
         });
+        console.log("Report:", report);
         await report.save();
 
         console.log("Report saved successfully");
-        res.json({ analyzed: true, reportId: reportId, report: report });
+        res.json({ analyzed: true, reportId: reportId});
 
         // Clean up the uploaded file
         fs.unlinkSync(filePath);
@@ -127,4 +128,17 @@ Respond ONLY in the following JSON format (no markdown formatting, just pure JSO
     }
 }
 
-module.exports = { analyzeReport };
+async function getReportById(req, res) {
+    try {
+        const reportId = req.params.reportId;
+        console.log("reportId =>", reportId)
+        const report = await reportModel.findOne({ reportId: reportId });
+        console.log("Report =>", report)
+        return res.status(200).json({ analyzed: true, reportId: reportId, report: report });
+    } catch (error) {
+        return res.status(500).json({ error: 'Error fetching report', message: error.message });
+    }
+       
+}
+
+module.exports = { analyzeReport, getReportById };

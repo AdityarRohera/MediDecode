@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
 const reportSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+  userId: { type: String, required: false },
   fileName: String,
   uploadDate: { type: Date, default: Date.now },
+  reportId: String,
   fileUrl: String,
   summary: {
     normal: Number,

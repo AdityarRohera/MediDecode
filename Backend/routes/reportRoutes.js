@@ -1,6 +1,6 @@
 const express = require('express');
 const reportRouter = express.Router();
-const {analyzeReport} = require('../controllers/reportController')
+const {analyzeReport, getReportById} = require('../controllers/reportController')
 const multer = require('multer');
 
 
@@ -14,5 +14,6 @@ const upload = multer({
   });
 
 reportRouter.post('/analyze', upload.single('file'), analyzeReport);
+reportRouter.get('/:reportId', getReportById);
 
 module.exports = {reportRouter};
