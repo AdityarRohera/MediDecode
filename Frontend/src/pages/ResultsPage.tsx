@@ -1,21 +1,39 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Activity, AlertTriangle, FilePlus2 } from 'lucide-react';
 import { useMedicalReport } from '../context/MedicalReportContext';
 import ResultCard from '../components/results/ResultCard';
 import Button from '../components/ui/Button';
 import ChatWidget from '../components/chat/ChatWidget';
+import FullScreenLoader from '../components/ui/FullScreenLoader';
+
+type StatusCounts = {
+  normal: number;
+  borderline: number;
+  critical: number;
+};
 
 const ResultsPage = () => {
-  const { currentReport, results, clearReport } = useMedicalReport();
+  const { currentReport, clearReport, fetchReportById, isLoading } = useMedicalReport();
   const navigate = useNavigate();
+  const { reportId } = useParams();
 
   useEffect(() => {
-    // Redirect to upload page if no report is available
-    if (!currentReport) {
-      navigate('/upload');
-    }
-  }, [currentReport, navigate]);
+    const loadReport = async () => {
+      if (reportId) {
+        try {
+          await fetchReportById(reportId);
+        } catch (error) {
+          console.error('Error loading report:', error);
+          navigate('/upload');
+        }
+      } else if (!currentReport) {
+        navigate('/upload');
+      }
+    };
+
+    loadReport();
+  }, [reportId, currentReport, navigate, fetchReportById]);
 
   const handleNewUpload = () => {
     clearReport();
@@ -23,13 +41,18 @@ const ResultsPage = () => {
   };
 
   // Count results by status
-  const statusCounts = results.reduce(
-    (counts, system) => {
-      counts[system.status]++;
+  const statusCounts: StatusCounts = currentReport?.organs.reduce(
+    (counts, organ) => {
+      const status = organ.status.toLowerCase() as keyof StatusCounts;
+      counts[status]++;
       return counts;
     },
     { normal: 0, borderline: 0, critical: 0 }
-  );
+  ) || { normal: 0, borderline: 0, critical: 0 };
+
+  if (isLoading) {
+    return <FullScreenLoader message="Loading your report..." />;
+  }
 
   if (!currentReport) {
     return null; // Will redirect via useEffect
@@ -111,8 +134,8 @@ const ResultsPage = () => {
 
         {/* Results Detail Section */}
         <div className="space-y-6">
-          {results.map((organSystem) => (
-            <ResultCard key={organSystem.id} organSystem={organSystem} />
+          {currentReport.organs.map((organResult) => (
+            <ResultCard key={organResult._id} organResult={organResult} />
           ))}
         </div>
 

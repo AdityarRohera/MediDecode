@@ -87,7 +87,7 @@ Respond ONLY in the following JSON format (no markdown formatting, just pure JSO
 
         const reportId = uuidv4();
         const report = new reportModel({
-            userId: new mongoose.Types.ObjectId(), // Generate a new ObjectId
+            userId: "f2c7433f-1afc-497c-8356-1fb09e4ed359", // Generate a new ObjectId
             reportId: reportId,
             fileName: req.file.originalname,
             fileUrl: filePath,
@@ -127,4 +127,15 @@ Respond ONLY in the following JSON format (no markdown formatting, just pure JSO
     }
 }
 
-module.exports = { analyzeReport };
+async function getReportById(req, res) {
+    try {
+        const reportId = req.params.reportId;
+        const report = await reportModel.findOne({ reportId: reportId });
+        return res.status(200).json(report);
+    } catch (error) {
+        return res.status(500).json({ error: 'Error fetching report', message: error.message });
+    }
+       
+}
+
+module.exports = { analyzeReport, getReportById };

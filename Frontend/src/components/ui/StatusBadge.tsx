@@ -1,6 +1,8 @@
 import { StatusBadgeProps } from '../../types';
 import { CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
+type StatusType = 'normal' | 'borderline' | 'critical';
+
 const StatusBadge = ({ status }: StatusBadgeProps) => {
   const statusConfig = {
     normal: {
@@ -23,7 +25,8 @@ const StatusBadge = ({ status }: StatusBadgeProps) => {
     },
   };
 
-  const { text, bgColor, textColor, icon } = statusConfig[status];
+  const normalizedStatus = status.toLowerCase() as StatusType;
+  const { text, bgColor, textColor, icon } = statusConfig[normalizedStatus];
 
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bgColor} ${textColor}`}>

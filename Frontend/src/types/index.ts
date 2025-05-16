@@ -1,8 +1,34 @@
+export interface ExtractionFromReport {
+  testName: string;
+  resultValue: string;
+  expectedRange: string;
+  unitOfMeasurement: string;
+}
+
+export type StatusType = 'Normal' | 'Borderline' | 'Critical';
+
+export interface OrganResult {
+  organ: string;
+  status: StatusType;
+  explanation: string;
+  extractionFromReport: ExtractionFromReport;
+  _id: string;
+}
+
 export interface MedicalReport {
-  id: string;
+  userId: string;
   fileName: string;
+  fileUrl: string;
+  organs: OrganResult[];
+  _id: string;
   uploadDate: string;
-  processed: boolean;
+  __v: number;
+}
+
+export interface AnalysisResponse {
+  analyzed: boolean;
+  reportId: string;
+  report: MedicalReport;
 }
 
 export interface OrganSystem {
@@ -29,11 +55,11 @@ export interface FileUploadProps {
 }
 
 export interface ResultCardProps {
-  organSystem: OrganSystem;
+  organResult: OrganResult;
 }
 
 export interface StatusBadgeProps {
-  status: 'normal' | 'borderline' | 'critical';
+  status: StatusType;
 }
 
 export interface LabelProps {
