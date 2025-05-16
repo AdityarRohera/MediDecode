@@ -12,10 +12,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 const {router} = require('./routes/userRoute')
+const {reportRouter} = require('./routes/reportRoutes')
 app.use('/api/v1/user', router);
+app.use('/api/v1/report', reportRouter);
 
 // db connect here
-const dbConnect = require('./Database/dbConnect');
+const dbConnect = require('./database/dbConnect');
 dbConnect();
 
 app.listen(PORT, () => {

@@ -81,7 +81,7 @@ const ChatWidget = () => {
                     </div>
                   </div>
                 </div>
-                <span className="text-white font-medium text-sm">Health Assistant</span>
+                <span className="text-white font-medium text-sm">Dear Doctor</span>
               </div>
               
               {/* Animated border */}
@@ -114,7 +114,7 @@ const ChatWidget = () => {
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <div className="flex items-center space-x-2">
                 <Bot className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-                <span className="font-medium text-gray-900 dark:text-white">Health Assistant</span>
+                <span className="font-medium text-gray-900 dark:text-white">Dear Doctor</span>
               </div>
               <button
                 onClick={() => setIsOpen(false)}

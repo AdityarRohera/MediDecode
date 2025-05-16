@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Activity, Sun, Moon } from 'lucide-react';
+import { Activity, Sun, Moon, History } from 'lucide-react';
 import { useMedicalReport } from '../../context/MedicalReportContext';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -20,6 +20,18 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center space-x-4">
+            <Link
+              to="/history"
+              className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                location.pathname === '/history'
+                  ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+            >
+              <History className="h-4 w-4 mr-2" />
+              History
+            </Link>
+
             <button
               onClick={toggleTheme}
               className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
