@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import { X, Send, Bot, User, Heart, Stethoscope } from 'lucide-react';
 import Button from '../ui/Button';
 
 interface Message {
@@ -14,6 +14,7 @@ const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,12 +43,65 @@ const ChatWidget = () => {
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 p-4 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-colors"
+      <div 
+        className="fixed bottom-6 right-6 flex flex-col items-end space-y-2"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <MessageCircle className="h-6 w-6" />
-      </button>
+        <AnimatePresence>
+          {!isOpen && isHovered && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 mb-2 max-w-xs"
+            >
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                👋 Hi! I'm your health assistant. Ask me anything about your results!
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.button
+          onClick={() => setIsOpen(true)}
+          className="relative group"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <div className="relative">
+            {/* Main button */}
+            <div className="relative bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg shadow-lg group-hover:shadow-xl transition-all duration-300 overflow-hidden">
+              <div className="flex items-center px-4 py-3 space-x-3">
+                <div className="relative">
+                  <Stethoscope className="h-5 w-5 text-white" />
+                  <div className="absolute -top-1 -right-1">
+                    <div className="bg-white rounded-full p-0.5">
+                      <Heart className="h-2 w-2 text-primary-500" />
+                    </div>
+                  </div>
+                </div>
+                <span className="text-white font-medium text-sm">Health Assistant</span>
+              </div>
+              
+              {/* Animated border */}
+              <motion.div
+                className="absolute bottom-0 left-0 h-0.5 bg-white"
+                initial={{ width: "0%" }}
+                animate={{ width: isHovered ? "100%" : "0%" }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+
+            {/* Hover effect */}
+            <motion.div
+              className="absolute inset-0 rounded-lg bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"
+              initial={false}
+              animate={{ scale: isHovered ? 1.02 : 1 }}
+            />
+          </div>
+        </motion.button>
+      </div>
 
       <AnimatePresence>
         {isOpen && (
