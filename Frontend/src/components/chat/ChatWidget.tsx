@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Bot, User, Heart, Stethoscope } from 'lucide-react';
 import Button from '../ui/Button';
-
+import axios from 'axios';
 interface Message {
   id: string;
   type: 'user' | 'ai';
@@ -10,7 +10,7 @@ interface Message {
   timestamp: Date;
 }
 
-const ChatWidget = () => {
+const ChatWidget = ({ reportId }: { reportId: string }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -30,15 +30,20 @@ const ChatWidget = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
 
-    setTimeout(() => {
+    try {
+      const aiResponse = await axios.post(`http://localhost:8003/api/report/message`, { reportId: reportId, message: input });
+      console.log('Sending message to server:', input, 'for report:', reportId);
+      console.log('AI response:', aiResponse.data.reply);
       const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: (Date.now()+1).toString(),
         type: 'ai',
-        content: "I understand you're asking about health information. While I can provide general information, please remember that this should not replace professional medical advice.",
+        content: aiResponse.data.reply,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiMessage]);
-    }, 1000);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   };
 
   return (
