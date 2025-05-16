@@ -4,6 +4,7 @@ import { Activity, AlertTriangle, FilePlus2 } from 'lucide-react';
 import { useMedicalReport } from '../context/MedicalReportContext';
 import ResultCard from '../components/results/ResultCard';
 import Button from '../components/ui/Button';
+import ChatWidget from '../components/chat/ChatWidget';
 
 const ResultsPage = () => {
   const { currentReport, results, clearReport } = useMedicalReport();
@@ -124,6 +125,7 @@ const ResultsPage = () => {
           </p>
         </div>
       </div>
+      <ChatWidget />
     </div>
   );
 };
