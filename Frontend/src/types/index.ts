@@ -18,7 +18,6 @@ export interface OrganResult {
 export interface MedicalReport {
   userId: string;
   fileName: string;
-  fileUrl: string;
   organs: OrganResult[];
   _id: string;
   uploadDate: string;

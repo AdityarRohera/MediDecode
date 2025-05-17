@@ -31,7 +31,7 @@ const ChatWidget = ({ reportId }: { reportId: string }) => {
     setInput('');
 
     try {
-      const aiResponse = await axios.post(`http://localhost:8003/api/report/message`, { reportId: reportId, message: input });
+      const aiResponse = await axios.post(`http://localhost:8003/api/v1/chat-with-ai-doctor`, { reportId: reportId, newMessage: input });
       console.log('Sending message to server:', input, 'for report:', reportId);
       console.log('AI response:', aiResponse.data.reply);
       const aiMessage: Message = {

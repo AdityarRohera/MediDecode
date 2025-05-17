@@ -22,33 +22,24 @@ const ResultsPage = () => {
   const [searchParams] = useSearchParams();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isShared, setIsShared] = useState(false);
   const { toPDF, targetRef } = usePDF({filename: 'health-report.pdf'});
 
-  const isSharedView = searchParams.get('share') === 'true';
-  if (isSharedView && !isShared) {
-    setIsShared(true);
-  }
-  // console.log("isSharedView", isSharedView);
 
   useEffect(() => {
     const loadReport = async () => {
-      if (reportId && !currentReport?.report && isInitialLoad) {
+      if (reportId) {
         try {
           setIsInitialLoad(false);
           await fetchReportById(reportId);
-
         } catch (error) {
           console.error('Error loading report:', error);
           navigate('/upload');
         }
-      } else if (!currentReport && !isInitialLoad) {
-        navigate('/upload');
       }
     };
 
     loadReport();
-  }, [reportId, isInitialLoad, navigate, fetchReportById]);
+  }, [reportId, navigate]);
 
   const handleShare = () => {
     setIsShareModalOpen(true);
@@ -83,14 +74,14 @@ const ResultsPage = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                {isShared ? "Sahil's Health Report" : "Your Health Results"}
+                {"Your Health Results"}
               </h1>
               <p className="text-gray-600 mt-1">
                 Analyzed on {new Date(currentReport?.report?.uploadDate || '').toLocaleDateString()} • {currentReport?.report?.fileName}
               </p>
             </div>
             <div className="flex gap-2 mt-4 sm:mt-0">
-              {!isShared && (
+              
                 <>
                   <Button
                     variant="outline"
@@ -107,7 +98,7 @@ const ResultsPage = () => {
                     Share Report
                   </Button>
                 </>
-              )}
+            
             </div>
           </div>
         </div>

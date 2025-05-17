@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
-const reportModel = require('../models/reportModel');
+const { reportModel } = require('../models/reportModel');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const path = require('path');
 const fs = require('fs');
@@ -141,4 +141,14 @@ async function getReportById(req, res) {
        
 }
 
-module.exports = { analyzeReport, getReportById };
+async function getHistory(req, res) {
+    try {
+        const userId = "f2c7433f-1afc-497c-8356-1fb09e4ed359";
+        const history = await reportModel.find({ userId: userId });
+        return res.status(200).json({ history: history });
+    } catch (error) {
+        return res.status(500).json({ error: 'Error fetching history', message: error.message });
+    }
+}
+
+module.exports = { analyzeReport, getReportById, getHistory };
