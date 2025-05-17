@@ -14,9 +14,11 @@ app.use(express.urlencoded({ extended: true }));
 const {router} = require('./routes/userRoute')
 const {reportRouter} = require('./routes/reportRoutes')
 const {chatRouter} = require('./routes/chatRoute')
+const {analysisRouter} = require('./routes/analysisRoute')
 app.use('/api/v1/user', router);
 app.use('/api/v1/report', reportRouter);
 app.use('/api/v1' , chatRouter);
+app.use('api/v1' , analysisRouter)
 
 // db connect here
 const dbConnect = require('./database/dbConnect');
