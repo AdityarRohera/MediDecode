@@ -18,7 +18,7 @@ const {analysisRouter} = require('./routes/analysisRoute')
 app.use('/api/v1/user', router);
 app.use('/api/v1/report', reportRouter);
 app.use('/api/v1' , chatRouter);
-app.use('api/v1' , analysisRouter)
+app.use('/api/v1' , analysisRouter)
 
 // db connect here
 const dbConnect = require('./database/dbConnect');

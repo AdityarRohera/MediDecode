@@ -1,9 +1,9 @@
 const express = require('express');
 const analysisRouter = express.Router();
 
-const {analyzeReport , getAnalysisData} = require('../controllers/analyzeReportHistoryController')
+const analyzeReportHistoryController = require('../controllers/analyzeReportHistoryController');
 
-analysisRouter.post('/analysis-report' , analyzeReport);
-analysisRouter.get('analysis-report' , getAnalysisData);
+analysisRouter.post('/analysis-report' , analyzeReportHistoryController.compareReport);
+analysisRouter.get('/analysis-report/:analysisId' , analyzeReportHistoryController.getAnalysisData);
 
 module.exports = {analysisRouter};

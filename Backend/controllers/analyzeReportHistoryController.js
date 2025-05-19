@@ -44,7 +44,7 @@ const extractData = (report) => {
   });   
 };
 
-const analyzeReport = async(req , res) => {
+const compareReport = async(req , res) => {
     console.log("Inside analysis")
     try{
         const {reportId1 , reportId2} = req.body; 
@@ -74,6 +74,9 @@ const analyzeReport = async(req , res) => {
           
               const reportA = extractedReports [0]; // Older
               const reportB = extractedReports [1]; // Newer
+
+              console.log("reportA -> ", reportA);
+              console.log("reportB -> ", reportB);
         
 
         // now we get extracted data in structured form so write prompt
@@ -106,49 +109,85 @@ const analyzeReport = async(req , res) => {
         ---
         
         Report A (older):
-        ${JSON.stringify(reportA.organs, null, 2)}
+        ${JSON.stringify(reportA, null, 2)}
         
-        Upload Date: ${reportA.uploadDate}
+        Upload Date: ${reportA[0].uploadDate}
         
         Report B (newer):
-        ${JSON.stringify(reportB.organs, null, 2)}
+        ${JSON.stringify(reportB, null, 2)}
         
-        Upload Date: ${reportB.uploadDate}
+        Upload Date: ${reportB[0].uploadDate}
         
         ---
         
-        Respond only in this JSON format:
+        IMPORTANT: You must respond with ONLY a valid JSON array in this exact format, with no additional text or explanation. Each object MUST have these exact fields:
         [
           { 
             "testName": "Vitamin B12",
             "organ": "Blood",
-            "change": "Improved",
+            "change": "Improved",  // Must be one of: "Improved", "Declined", "Same"
             "oldValue": "120",
             "newValue": "450",
             "expectedRange": "200-900",
-            "unitOfMeasurement": "pg/mL",
-            "statusNow": "Normal",
+            "statusNow": "Normal",  // Must be one of: "Normal", "Borderline", "Critical"
             "feedback": "Your Vitamin B12 is now in a healthy range. Great work!"
-             "previousDate": "2024-10-10T08:15:00.000Z",
-              "newDate": "2024-11-15T08:15:00.000Z"
           }
         ]
         `;
-
+console.log("analysis compare fullPrompt -> ", fullPrompt);
         // now call open api 
         const result = await model.generateContent(fullPrompt);
-       const textResponse = await result.response.text();
+        const textResponse = result.response.text();
+        console.log("analysis compare textResponse -> ", textResponse);
 
-           // Convert string to JavaScript object
-           const jsonData = JSON.parse(textResponse);
-           
-           // Now jsonData is a usable JavaScript array or object
-            jsonData;
+        let jsonData;
+        try {
+            // Clean the response text by removing markdown formatting
+            const cleanResponse = textResponse
+                .replace(/```json\n?/g, '')  // Remove opening ```json
+                .replace(/```\n?/g, '')      // Remove closing ```
+                .trim();                     // Remove any extra whitespace
 
-          const compareId = uuidv4();  
-          const createAnalysis = await analysisModel.create({
+            // Try to parse the response as JSON
+            jsonData = JSON.parse(cleanResponse);
+            console.log("analysis compare jsonData -> ", jsonData);
+            
+            // Validate that it's an array
+            if (!Array.isArray(jsonData)) {
+                throw new Error('Response is not an array');
+            }
+
+            // Validate each object in the array has required fields
+            jsonData.forEach((item, index) => {
+                const requiredFields = ['testName', 'change', 'oldValue', 'newValue', 'feedback'];
+                const missingFields = requiredFields.filter(field => !item[field]);
+                if (missingFields.length > 0) {
+                    throw new Error(`Missing required fields in item ${index}: ${missingFields.join(', ')}`);
+                }
+                
+                // Validate enum values
+                if (!['Improved', 'Declined', 'Same'].includes(item.change)) {
+                    throw new Error(`Invalid change value in item ${index}: ${item.change}`);
+                }
+                if (item.statusNow && !['Normal', 'Borderline', 'Critical'].includes(item.statusNow)) {
+                    throw new Error(`Invalid statusNow value in item ${index}: ${item.statusNow}`);
+                }
+            });
+        } catch (parseError) {
+            console.error('Failed to parse Gemini response:', parseError);
+            console.error('Raw response:', textResponse);
+            return res.status(500).send({
+                status: "fail",
+                message: "Failed to parse analysis response",
+                error: parseError.message
+            });
+        }
+
+        const compareId = uuidv4();  
+        const createAnalysis = await analysisModel.create({
           userId: userId,
-          reportIds: [reportId1, reportId2],
+          reportId1: reportId1,
+          reportId2: reportId2,
           analysisId: compareId,
           comparedAt: new Date(), // Optional, will default to Date.now
           testsCompared: jsonData
@@ -157,15 +196,17 @@ const analyzeReport = async(req , res) => {
         return res.status(200).send({
             status : "succes",
             message : "Report analysis successfully",
-            analysisId : createAnalysis.analysisId
+            compareId : createAnalysis.analysisId
         })
          
                  
         } catch(err){
 
+          console.log("err -> ", err);
+
         res.status(500).send({
             status : "fail",
-            message : "something wronged happen",
+            message : "something wronged happend",
             error : err
         })
     }
@@ -174,7 +215,7 @@ const analyzeReport = async(req , res) => {
 
 const getAnalysisData = async(req , res) => {
     try{
-          const {analysisId} = req.body;
+          const {analysisId} = req.params;
           
           // now find analysis report
           const findAnalysis = await analysisModel.findOne({analysisId:analysisId});
@@ -194,4 +235,4 @@ const getAnalysisData = async(req , res) => {
 }
 
 
-module.exports = {analyzeReport , getAnalysisData};
+module.exports = {compareReport , getAnalysisData};

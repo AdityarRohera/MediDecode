@@ -11,7 +11,7 @@ import { StatusType } from '../types';
 interface ComparisonItem {
   testName: string;
   organ: string;
-  change: 'Improved' | 'Worsened' | 'Unchanged';
+  change: 'Improved' | 'Worsened' | 'Unchanged' | 'Same';
   oldValue: string;
   newValue: string;
   expectedRange: string;
@@ -20,61 +20,19 @@ interface ComparisonItem {
   feedback: string;
   prevReportDate: string;
   currReportDate: string;
+  _id: string;
 }
 
 interface CompareDetails {
-  compareId: string;
-  comparisons: ComparisonItem[];
+  analysisId: string;
+  reportId1: string;
+  reportId2: string;
+  comparedAt: string;
+  testsCompared: ComparisonItem[];
+  _id: string;
+  __v: number;
+  userId: string;
 }
-
-const history = [
-  {
-    reportId: "833edfd6-e90e-4a5f-b720-0ba46f6d5e65",
-      userId: "f2c7433f-1afc-497c-8356-1fb09e4ed359",
-      fileName: "medical report 2.pdf", 
-      fileUrl: "uploads/db1fb86b6c489f271d5124a43659c90c",
-      uploadDate: new Date("2025-05-16T11:34:43.793Z"),
-      _id: "682722d3db6c8d33a0f77542",
-      __v: 0,
-      organs: [
-        {
-          organ: "Electrolytes",
-          status: "Borderline", 
-          explanation: "Your calcium is a bit high. Better check with a doctor to be sure!",
-          extractionFromReport: {
-            test: "Electrolytes",
-            resultValue: 100,
-            expectedRange: "100-120",
-            unitOfMeasurement: "mg/dL",
-            _id: "682722d3db6c8d33a0f77542"
-          },
-        }
-      ]
-  },
-   {
-    reportId: "833edfd6-e90e-4a5f-b720-0ba46f6d5e66",
-      userId: "f2c7433f-1afc-497c-8356-1fb09e4ed359",
-      fileName: "medical report 2.pdf", 
-      fileUrl: "uploads/db1fb86b6c489f271d5124a43659c90c",
-      uploadDate: new Date("2025-05-16T11:34:43.793Z"),
-      _id: "682722d3db6c8d33a0f77542",
-      __v: 0,
-      organs: [
-        {
-          organ: "Electrolytes",
-          status: "Borderline", 
-          explanation: "Your calcium is a bit high. Better check with a doctor to be sure!",
-          extractionFromReport: {
-            test: "Electrolytes",
-            resultValue: 100,
-            expectedRange: "100-120",
-            unitOfMeasurement: "mg/dL",
-            _id: "682722d3db6c8d33a0f77542"
-          },
-        }
-      ]
-  }
-]
 
 const ComparisonChart = ({ 
   oldValue, 
@@ -176,6 +134,19 @@ const ComparisonChart = ({
   );
 };
 
+const formatDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Invalid Date';
+    }
+    return format(date, 'MMM d, yyyy');
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'Invalid Date';
+  }
+};
+
 const HistoryPage = () => {
   const [reportHistory, setReportHistory] = useState();
   const [selectedReports, setSelectedReports] = useState<string[]>([]);
@@ -217,42 +188,24 @@ const HistoryPage = () => {
     try {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Create dummy comparison data
-      const dummyCompareDetails: CompareDetails = {
-        compareId: "dummy-compare-id",
-        comparisons: [
-          {
-            testName: "Vitamin B12",
-            organ: "Blood",
-            change: "Improved",
-            oldValue: "120",
-            newValue: "450",
-            expectedRange: "200-900",
-            unitOfMeasurement: "pg/mL",
-            prevReportDate : "2025-05-16T11:34:43.793Z",
-            currReportDate : "2025-05-16T11:34:43.793Z",
-            statusNow: "Normal",
-            feedback: "Your Vitamin B12 is now in a healthy range. Great work!"
-          },
-          {
-            testName: "Calcium",
-            organ: "Electrolytes",
-            change: "Worsened",
-            oldValue: "9.5",
-            newValue: "11.2",
-            expectedRange: "8.5-10.5",
-            unitOfMeasurement: "mg/dL",
-            prevReportDate : "2025-05-16T11:34:43.793Z",
-            currReportDate : "2025-05-16T11:34:43.793Z",
-            statusNow: "Critical",
-            feedback: "Your calcium levels have increased significantly. Please consult your doctor."
-          }
-        ]
-      };
-      
-      setCompareDetails(dummyCompareDetails);
-      setIsCompareModalOpen(true);
+
+      const response = await axios.post(`http://localhost:8003/api/v1/analysis-report`, {
+        reportId1: selectedReports[0],
+        reportId2: selectedReports[1]
+      });
+      console.log("response -> ", response.data);
+
+      const compareId = response.data.compareId;
+
+      const analysisResponse = await axios.get(`http://localhost:8003/api/v1/analysis-report/${compareId}`);
+      console.log("analysisResponse -> ", analysisResponse.data);
+
+      const analysisData = analysisResponse.data.analysisData;
+
+      console.log("analysisData -> ", analysisData);
+        
+        setCompareDetails(analysisData);
+        setIsCompareModalOpen(true);
     } catch (error) {
       console.error('Error comparing reports:', error);
     } finally {
@@ -312,7 +265,7 @@ const HistoryPage = () => {
                         <div className="flex items-center space-x-4 mt-1">
                           <span className="flex items-center text-sm text-gray-500">
                             <Calendar className="h-4 w-4 mr-1" />
-                            {format(new Date(report.uploadDate), 'MMM d, yyyy')}
+                            {formatDate(report.uploadDate)}
                           </span>
                           <div className="flex items-center space-x-2">
                             <Activity className="h-4 w-4 text-gray-500" />
@@ -361,18 +314,18 @@ const HistoryPage = () => {
                 <div className="flex items-center space-x-4 text-sm text-gray-500">
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-primary-500 mr-2"></div>
-                    <span>Previous: {format(new Date(compareDetails.comparisons[0].prevReportDate), 'MMM d, yyyy')}</span>
+                    <span>Previous: {formatDate(compareDetails.testsCompared[0]?.prevReportDate || '')}</span>
                   </div>
                   <div className="flex items-center">
                     <div className="w-3 h-3 rounded-full bg-success-500 mr-2"></div>
-                    <span>Current: {format(new Date(compareDetails.comparisons[0].currReportDate), 'MMM d, yyyy')}</span>
+                    <span>Current: {formatDate(compareDetails.testsCompared[0]?.currReportDate || '')}</span>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-6">
-                {compareDetails.comparisons.map((comparison, index) => (
-                  <div key={index} className="border rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition-shadow">
+                {compareDetails.testsCompared.map((comparison, index) => (
+                  <div key={comparison._id || index} className="border rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className="text-xl font-semibold text-gray-900">{comparison.testName}</h3>
@@ -391,7 +344,7 @@ const HistoryPage = () => {
                             <span className="text-sm font-medium text-danger-700">Worsened</span>
                           </div>
                         )}
-                        {comparison.change === 'Unchanged' && (
+                        {(comparison.change === 'Unchanged' || comparison.change === 'Same') && (
                           <div className="flex items-center bg-gray-50 px-3 py-1.5 rounded-full">
                             <Minus className="h-5 w-5 text-gray-500 mr-1.5" />
                             <span className="text-sm font-medium text-gray-700">Unchanged</span>
@@ -411,7 +364,7 @@ const HistoryPage = () => {
                           {comparison.oldValue} <span className="text-sm font-normal text-gray-500">{comparison.unitOfMeasurement}</span>
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
-                          {format(new Date(comparison.prevReportDate), 'MMM d, yyyy')}
+                          {formatDate(comparison.prevReportDate)}
                         </p>
                       </div>
                       <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -423,7 +376,7 @@ const HistoryPage = () => {
                           {comparison.newValue} <span className="text-sm font-normal text-gray-500">{comparison.unitOfMeasurement}</span>
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
-                          {format(new Date(comparison.currReportDate), 'MMM d, yyyy')}
+                          {formatDate(comparison.currReportDate)}
                         </p>
                       </div>
                     </div>

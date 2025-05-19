@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Bot, User, Heart, Stethoscope } from 'lucide-react';
 import Button from '../ui/Button';
 import axios from 'axios';
+
 interface Message {
   id: string;
   type: 'user' | 'ai';
@@ -15,6 +16,7 @@ const ChatWidget = ({ reportId }: { reportId: string }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isHovered, setIsHovered] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +31,7 @@ const ChatWidget = ({ reportId }: { reportId: string }) => {
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setIsLoading(true);
 
     try {
       const aiResponse = await axios.post(`http://localhost:8003/api/v1/chat-with-ai-doctor`, { reportId: reportId, newMessage: input });
@@ -43,8 +46,25 @@ const ChatWidget = ({ reportId }: { reportId: string }) => {
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const TypingIndicator = () => (
+    <div className="flex items-start space-x-2">
+      <div className="p-2 rounded-full bg-gray-100 dark:bg-gray-700">
+        <Bot className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+      </div>
+      <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-700">
+        <div className="flex space-x-1">
+          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -165,6 +185,7 @@ const ChatWidget = ({ reportId }: { reportId: string }) => {
                   </div>
                 </div>
               ))}
+              {isLoading && <TypingIndicator />}
             </div>
 
             <div className="p-4 border-t border-gray-200 dark:border-gray-700">
